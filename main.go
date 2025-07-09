@@ -54,12 +54,22 @@ func greetPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := fmt.Sprintf(
-		"Hello, %s! I heard you like %s. From: %s. Query: %v. Token: %s",
-		user.Name, user.Hobby, from, query, token)
-
-	log.Printf("Response: %s", response)
-	w.Write([]byte(response))
+	responseObj := map[string]interface{}{
+		"message": fmt.Sprintf("Hello, %s! I heard you like %s.", user.Name, user.Hobby),
+		"from": from,
+		"query": query,
+		"token": token,
+		"user": user,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	jsonResp, err := json.Marshal(responseObj)
+	if err != nil {
+		http.Error(w, "Failed to marshal response", http.StatusInternalServerError)
+		log.Println("Failed to marshal response:", err)
+		return
+	}
+	log.Printf("Response: %s", string(jsonResp))
+	w.Write(jsonResp)
 }
 
 func greetGetHandler(w http.ResponseWriter, r *http.Request) {
@@ -74,12 +84,21 @@ func greetGetHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Path Param 'from': %s", from)
 	log.Printf("Bearer Token: %s", token)
 
-	response := fmt.Sprintf(
-		"Hello from GET! From: %s. Query: %v. Token: %s",
-		from, query, token)
-
-	log.Printf("Response: %s", response)
-	w.Write([]byte(response))
+	responseObj := map[string]interface{}{
+		"message": "Hello from GET!",
+		"from": from,
+		"query": query,
+		"token": token,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	jsonResp, err := json.Marshal(responseObj)
+	if err != nil {
+		http.Error(w, "Failed to marshal response", http.StatusInternalServerError)
+		log.Println("Failed to marshal response:", err)
+		return
+	}
+	log.Printf("Response: %s", string(jsonResp))
+	w.Write(jsonResp)
 }
 
 func main() {
